@@ -21,13 +21,6 @@ name: (identifier) @name)
 )
 ]]
 
-local query_for_namespace = [[
-(
-(file_scoped_namespace_declaration
-name: (identifier) @name)
-)
-]]
-
 local matches_pattern = function(node, type_patterns)
     local node_type = node:type()
     local is_valid = false
@@ -78,7 +71,6 @@ end
 
 local write_method = function(bufnr)
     local type_patterns = {
-        ['namespace'] = query_for_namespace,
         ['class'] = query_for_class,
         ['method'] = query_for_method,
     }
@@ -88,7 +80,6 @@ end
 
 local write_class = function(bufnr)
     local type_patterns = {
-        ['namespace'] = query_for_namespace,
         ['class'] = query_for_class,
     }
     local text = get_unit_test_range(bufnr, type_patterns)
