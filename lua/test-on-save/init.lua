@@ -69,39 +69,53 @@ function get_unit_test_range(bufnr, type_patterns)
     return text
 end
 
-local write_method = function(bufnr)
+local scope_for_method = function(bufnr)
     local type_patterns = {
         ['class'] = query_for_class,
         ['method'] = query_for_method,
     }
     local text = get_unit_test_range(bufnr, type_patterns)
-    print(vim.inspect(text))
+    return vim.inspect(text)
 end
 
-local write_class = function(bufnr)
+local scope_for_class = function(bufnr)
     local type_patterns = {
         ['class'] = query_for_class,
     }
     local text = get_unit_test_range(bufnr, type_patterns)
-    print(vim.inspect(text))
+    return vim.inspect(text)
 end
 
-local attach_test_range = function(bufnr, write_range_fnc)
+local attach_test_range = function(bufnr, scope, write_range_fnc)
+    local command = { "dotnet", "test", "--filter", "FullyQualifiedName~" .. scope }
     local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
         group = group,
         pattern = "*.cs",
         callback = function()
-            write_range_fnc(bufnr)
-        end,
-    } )
+            vim.fn.jobstart(command, {
+                stdout_buffered = true,
+                on_stdout = function(_, data)
+                    if not data then
+                        return
+                    end
+                    local str_data = table.concat(data, "\n")
+                    vim.cmd { cmd = 'cexpr', args = {vim.inspect(str_data)} }
+                end,
+            } )
+        end
+    })
 end
 
 vim.api.nvim_create_user_command("AttachTestMethod", function()
-    attach_test_range(vim.api.nvim_get_current_buf(), write_method)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local scope = scope_for_method(bufnr)
+    attach_test_range(bufnr, scope)
 end, {})
 
 vim.api.nvim_create_user_command("AttachTestClass", function()
-    attach_test_range(vim.api.nvim_get_current_buf(), write_class)
+    local bufnr = vim.api.nvim_get_current_buf()
+    local scope = scope_for_class(bufnr)
+    attach_test_range(bufnr, scope)
 end, {})
 
