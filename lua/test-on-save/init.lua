@@ -86,10 +86,8 @@ local write_class = function(bufnr)
     print(vim.inspect(text))
 end
 
-local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
-
 local attach_test_range = function(bufnr, write_range_fnc)
-    vim.api.nvim_clear_autocmds({ group = "edvard-automagic" })
+    local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
         group = group,
         pattern = "*.cs",
