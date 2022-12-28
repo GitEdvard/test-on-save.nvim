@@ -1,5 +1,4 @@
 local open = io.open
-
 local function read_file(path)
     local file = open(path, "r") -- r read mode and b binary mode
     if not file then return nil end
@@ -39,7 +38,6 @@ local find_node = function(contents, query_string)
     local parser = ts.get_string_parser(contents, "c_sharp", {})
     local tree = parser:parse()[1]
     local root = tree:root()
-
     for id, node in query:iter_captures(root, contents, 0, -1) do
         if id == 1 then
             local start = { node:start() }

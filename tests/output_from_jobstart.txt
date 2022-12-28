@@ -1,0 +1,32 @@
+============================= test session starts ==============================
+platform linux -- Python 3.10.6, pytest-7.2.0, pluggy-1.0.0
+rootdir: /home/edvard/sources/test/stock-winners, configfile: pytest.ini
+collected 1 item
+
+tests/test_domain.py F                                                   [100%]
+
+=================================== FAILURES ===================================
+_______________________ test_daily_winners__second_item ________________________
+
+stock_exchange_with_entire_list = <stock_winners.domain.StockExchange object at 0x7f90bca72500>
+
+def test_daily_winners__second_item(stock_exchange_with_entire_list):
+    >       daily_winners = stock_exchange_with_entire_list.get_daily_winners()
+
+            tests/test_domain.py:51: 
+            _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+    stock_winners/domain.py:38: in get_daily_winners
+self.raise_exeption()
+    _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+    self = <stock_winners.domain.StockExchange object at 0x7f90bca72500>
+
+    def raise_exeption(self):
+        >       raise Exception("hej")
+                E       Exception: hej
+
+                stock_winners/domain.py:28: Exception
+                =========================== short test summary info ============================
+                FAILED tests/test_domain.py::test_daily_winners__second_item - Exception: hej
+                ============================== 1 failed in 0.03s ===============================
+
