@@ -2,6 +2,7 @@ local query_module = require'vim.treesitter.query'
 local ts_utils = require'nvim-treesitter.ts_utils'
 local ts = require'vim.treesitter'
 
+local M = {}
 -- Trim spaces and opening brackets from end
 local transform_line = function(line)
     return line:gsub('%s*[%[%(%{]*%s*$', '')
@@ -31,7 +32,7 @@ local get_node_text = function(start_node, bufnr, query_string, lang)
     return nil
 end
 
-function get_unit_test_range(bufnr, type_patterns, lang)
+M.get_unit_test_range = function(bufnr, type_patterns, lang)
     local options = {}
     local indicator_size = 100
     local transform_fn = transform_line
@@ -52,7 +53,7 @@ function get_unit_test_range(bufnr, type_patterns, lang)
     return text
 end
 
-local attach_test_range = function(bufnr, command, pattern)
+M.attach_test_range = function(bufnr, command, pattern)
     local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
         group = group,
@@ -73,4 +74,4 @@ local attach_test_range = function(bufnr, command, pattern)
     })
 end
 
-return attach_test_range
+return M
