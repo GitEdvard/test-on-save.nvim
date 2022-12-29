@@ -64,8 +64,9 @@ local attach_test_range = function(bufnr, command, pattern)
                     if not data then
                         return
                     end
-                    local str_data = table.concat(data, "\n")
-                    vim.cmd { cmd = 'cexpr', args = {vim.inspect(str_data)} }
+                    -- convert data to a vim script array
+                    local data_vim_arr = '[\'' .. table.concat(data, '\',\'') .. '\']'
+                    vim.cmd { cmd = 'cgetexpr', args = {data_vim_arr} }
                 end,
             } )
         end
