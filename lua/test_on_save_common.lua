@@ -69,6 +69,14 @@ M.attach_test_range = function(bufnr, command, pattern)
                     local data_vim_arr = '[\'' .. table.concat(data, '\',\'') .. '\']'
                     vim.cmd { cmd = 'cgetexpr', args = {data_vim_arr} }
                 end,
+                on_exit = function(_, exit_code, _)
+                    if exit_code == 0 then
+                        print("Test passed")
+                    else
+                        print("Test failed")
+                        -- vim.cmd.copen()
+                    end
+                end
             } )
         end
     })
