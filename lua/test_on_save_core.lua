@@ -53,6 +53,17 @@ M.get_unit_test_range = function(bufnr, type_patterns, lang)
     return text
 end
 
+local to_vim_script_arr = function(lua_table)
+    -- lua table contains strings only. Escape each single quote in it
+    local escaped_table = {}
+    for _, v in ipairs(lua_table) do
+        print(v)
+        local row = string.gsub(v, "'", "''")
+        table.insert(escaped_table, row)
+    end
+    return '[\'' .. table.concat(escaped_table, '\',\'') .. '\']'
+end
+
 M.attach_test_range = function(bufnr, command, pattern)
     local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
@@ -65,16 +76,14 @@ M.attach_test_range = function(bufnr, command, pattern)
                     if not data then
                         return
                     end
-                    -- convert data to a vim script array
-                    local data_vim_arr = '[\'' .. table.concat(data, '\',\'') .. '\']'
-                    print(data_vim_arr)
+                    local data_vim_arr = to_vim_script_arr(data)
                     vim.cmd { cmd = 'cgetexpr', args = {data_vim_arr} }
                 end,
                 on_exit = function(_, exit_code, _)
                     if exit_code == 0 then
                         print("Test passed")
                     else
-                        -- print("Test failed")
+                        print("Test failed")
                         -- vim.cmd.copen()
                     end
                 end
