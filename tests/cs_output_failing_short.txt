@@ -1,0 +1,1 @@
+      /home/edvard/sources/test/csharp4/tests/UnitTest1.cs(20,9): warning xUnit2005: Do not use Assert.Same() on value type 'double'. [/home/edvard/sour

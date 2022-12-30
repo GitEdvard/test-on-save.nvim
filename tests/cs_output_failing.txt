@@ -1,0 +1,21 @@
+Loaded server for /home/edvard/sources/test/csharp4/csharp4.sln in 5.7s
+  Determining projects to restore...
+    All projects are up-to-date for restore.
+      project -> /home/edvard/sources/test/csharp4/project/bin/Debug/net6.0/project.dll
+      /home/edvard/sources/test/csharp4/tests/UnitTest1.cs(20,9): warning xUnit2005: Do not use Assert.Same() on value type 'double'. [/home/edvard/sour
+      ces/test/csharp4/tests/tests.csproj]
+        tests -> /home/edvard/sources/test/csharp4/tests/bin/Debug/net6.0/tests.dll
+        Test run for /home/edvard/sources/test/csharp4/tests/bin/Debug/net6.0/tests.dll (.NETCoreApp,Version=v6.0)
+        Microsoft (R) Test Execution Command Line Tool Version 17.0.0+68bd10d3aee862a9fbb0bac8b3d474bc323024f3
+        Copyright (c) Microsoft Corporation.  All rights reserved.
+        Starting test execution, please wait...
+        A total of 1 test files matched the specified pattern.
+          Failed tests.UnitTest1.Test2 [4 ms]
+            Error Message:
+               Assert.Same() Failure
+               Expected: Infinity
+               Actual:   4
+                 Stack Trace:
+                      at tests.UnitTest1.Test2() in /home/edvard/sources/test/csharp4/tests/UnitTest1.cs:line 20
+                      Failed!  - Failed:     1, Passed:     0, Skipped:     0, Total:     1, Duration: < 1 ms - /home/edvard/sources/test/csharp4/tests/bin/Debug/net6.0
+                      /tests.dll (net6.0)

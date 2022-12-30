@@ -6,6 +6,9 @@ local contents_str = '[\'' .. table.concat(contents, '\',\'') .. '\']'
 
 vim.cmd{ cmd = 'cgetexpr', args = {contents_str} }
 
+-- vim.cmd.copen()
+
+-- vim.cmd("CTRL-W_L")
 -- require'os'
 -- require'io'
 -- local tmpname = os.tmpname()
