@@ -1,4 +1,4 @@
-local M = require('test_on_save_common')
+local M = require('test_on_save_core')
 
 local query_for_function = [[
 (
