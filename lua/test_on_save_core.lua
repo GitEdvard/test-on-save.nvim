@@ -37,6 +37,12 @@ M.get_unit_test_range = function(bufnr, type_patterns, lang)
     local indicator_size = 100
     local transform_fn = transform_line
     local current_node = ts_utils.get_node_at_cursor()
+    local delim_dict = {
+      ["c_sharp"] = ".",
+      ["python"] = ".",
+      ["java"] = "#"
+    }
+    delim = delim_dict[lang]
     if not current_node then return "" end
     local lines = {}
     local expr = current_node
@@ -49,7 +55,7 @@ M.get_unit_test_range = function(bufnr, type_patterns, lang)
         end
         expr = expr:parent()
     end
-    text = table.concat(lines, ".")
+    text = table.concat(lines, delim)
     return text
 end
 
