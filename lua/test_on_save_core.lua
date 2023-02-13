@@ -1,6 +1,7 @@
 local query_module = require'vim.treesitter.query'
 local ts_utils = require'nvim-treesitter.ts_utils'
 local ts = require'vim.treesitter'
+local to_vim_script_arr = require'utils'.to_vim_script_arr
 
 local M = {}
 -- Trim spaces and opening brackets from end
@@ -57,16 +58,6 @@ M.get_unit_test_range = function(bufnr, type_patterns, lang)
     end
     text = table.concat(lines, delim)
     return text
-end
-
-local to_vim_script_arr = function(lua_table)
-    -- lua table contains strings only. Escape each single quote in it
-    local escaped_table = {}
-    for _, v in ipairs(lua_table) do
-        local row = string.gsub(v, "'", "''")
-        table.insert(escaped_table, row)
-    end
-    return '[\'' .. table.concat(escaped_table, '\',\'') .. '\']'
 end
 
 M.attach_test_range = function(bufnr, command, pattern)

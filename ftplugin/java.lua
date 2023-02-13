@@ -1,4 +1,5 @@
 local M = require('test_on_save_core')
+local R = require('run_tests')
 
 local query_for_method = [[
 (
@@ -45,4 +46,16 @@ vim.api.nvim_create_user_command("AttachTestClass", function()
     M.attach_test_range(bufnr, command, "*.java")
 end, {})
 
+vim.api.nvim_create_user_command("RunTestMethod", function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local scope = scope_for_method(bufnr)
+    local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
+    R.run_test(command)
+end, {})
 
+vim.api.nvim_create_user_command("RunTestClass", function()
+    local bufnr = vim.api.nvim_get_current_buf()
+    local scope = scope_for_class(bufnr)
+    local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
+    R.run_test(command)
+end, {})
