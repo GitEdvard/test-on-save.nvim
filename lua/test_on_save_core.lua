@@ -72,8 +72,6 @@ M.attach_test_range = function(bufnr, command, pattern)
                     if not data then
                         return
                     end
-                    table.insert(data, 1, "Entering: /home/edvard/sources/dev/java-testing-course/src/test/java")
-                    table.insert(data, "Exiting")
                     local data_vim_arr = to_vim_script_arr(data)
                     vim.cmd { cmd = 'cgetexpr', args = {data_vim_arr} }
                 end,
