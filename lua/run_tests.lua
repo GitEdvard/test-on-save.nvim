@@ -22,14 +22,16 @@ local spawn_scratch_window = function()
     return bufnr, prompt_win
 end
 
-local show_and_gather_err = function(data, err_output, bufnr, prompt_win)
+local show_and_gather_err = function(data, err_output, bufnr, prompt_win, parser)
     if not data then
         return err_output
     end
     vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
     move_cursor(prompt_win, #data)
     for _, row in ipairs(data) do
+      if parser == nil or parser(row) ~= nil then
         table.insert(err_output, row)
+      end
     end
     return err_output
 end
@@ -41,17 +43,17 @@ local show_errors = function(err_output, bufnr, prompt_win)
     vim.cmd { cmd = 'cgetexpr', args = {vim_script_arr} }
 end
 
-M.run_test = function(command)
+M.run_test = function(command, parser)
     local bufnr, prompt_win = spawn_scratch_window()
     local err_output = {}
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "Waiting for script output ..."})
     vim.fn.jobstart(command, {
         stdout_buffered = true,
         on_stdout = function(_, data)
-            err_output = show_and_gather_err(data, err_output, bufnr, prompt_win)
+            err_output = show_and_gather_err(data, err_output, bufnr, prompt_win, parser)
         end,
         on_stderr = function(_, data)
-            err_output = show_and_gather_err(data, err_output, bufnr, prompt_win)
+            err_output = show_and_gather_err(data, err_output, bufnr, prompt_win, parser)
         end,
         on_exit = function(_, exit_code, _)
             show_errors(err_output, bufnr, prompt_win)

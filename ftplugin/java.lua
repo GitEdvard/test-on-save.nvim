@@ -32,6 +32,10 @@ local scope_for_class = function(bufnr)
     return vim.inspect(text)
 end
 
+local java_parser = function(row)
+  return nil
+end
+
 vim.api.nvim_create_user_command("AttachTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local scope = scope_for_method(bufnr)
@@ -50,12 +54,12 @@ vim.api.nvim_create_user_command("RunTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local scope = scope_for_method(bufnr)
     local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
-    R.run_test(command)
+    R.run_test(command, java_parser)
 end, {})
 
 vim.api.nvim_create_user_command("RunTestClass", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local scope = scope_for_class(bufnr)
     local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
-    R.run_test(command)
+    R.run_test(command, java_parser)
 end, {})
