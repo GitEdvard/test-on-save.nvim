@@ -33,7 +33,7 @@ local scope_for_class = function(bufnr)
 end
 
 local java_parser = function(row)
-  return nil
+  return require'java_test_parser'.parse_row(row)
 end
 
 vim.api.nvim_create_user_command("AttachTestMethod", function()

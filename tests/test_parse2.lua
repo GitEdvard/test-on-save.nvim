@@ -1,9 +1,9 @@
 local output_row = [[
-        at uk.co.monotonic.testing.junit5.before.m2.Cafe.brew(Cafe.java:21)
+     at org.junit.platform.engine.support.hierarchical.NodeTestTask.lambda$executeRecursively$6(NodeTestTask.java:155)
 ]]
 P(output_row)
 
-local java_path, file_name, row = string.match(output_row, '([%.%a%d]*)%(([%.%a%d]+):(%d+)')
+local java_path, file_name, row = string.match(output_row, '([%.%a%d%$]*)%(([%.%a%d]+):(%d+)')
 print(java_path)
 print(file_name)
 print(row)

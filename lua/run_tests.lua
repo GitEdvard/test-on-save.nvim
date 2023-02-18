@@ -29,8 +29,13 @@ local show_and_gather_err = function(data, err_output, bufnr, prompt_win, parser
     vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
     move_cursor(prompt_win, #data)
     for _, row in ipairs(data) do
-      if parser == nil or parser(row) ~= nil then
-        table.insert(err_output, row)
+      if parser ~= nil then
+        parsed_row = parser(row)
+      else
+        parsed_row = row
+      end
+      if parsed_row ~= nil then
+        table.insert(err_output, parsed_row)
       end
     end
     return err_output
