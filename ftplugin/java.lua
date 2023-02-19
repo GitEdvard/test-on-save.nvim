@@ -40,14 +40,14 @@ vim.api.nvim_create_user_command("AttachTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local scope = scope_for_method(bufnr)
     local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
-    M.attach_test_range(bufnr, command, "*.java")
+    M.attach_test_range(bufnr, command, "*.java", java_parser)
 end, {})
 
 vim.api.nvim_create_user_command("AttachTestClass", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local scope = scope_for_class(bufnr)
     local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
-    M.attach_test_range(bufnr, command, "*.java")
+    M.attach_test_range(bufnr, command, "*.java", java_parser)
 end, {})
 
 vim.api.nvim_create_user_command("RunTestMethod", function()

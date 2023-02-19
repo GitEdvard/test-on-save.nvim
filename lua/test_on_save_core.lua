@@ -60,7 +60,18 @@ M.get_unit_test_range = function(bufnr, type_patterns, lang)
     return text
 end
 
-M.attach_test_range = function(bufnr, command, pattern)
+local transform_data = function(data, parser)
+  local output = {}
+  for _, row in ipairs(data) do
+    local parsed_row = parser(row)
+    if parsed_row ~= nil then
+      table.insert(output, parsed_row)
+    end
+  end
+  return output
+end
+
+M.attach_test_range = function(bufnr, command, pattern, parser)
     local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
     vim.api.nvim_create_autocmd("BufWritePost", {
         group = group,
@@ -71,6 +82,9 @@ M.attach_test_range = function(bufnr, command, pattern)
                 on_stdout = function(_, data)
                     if not data then
                         return
+                    end
+                    if parser ~= nil then
+                      data = transform_data(data, parser)
                     end
                     local data_vim_arr = to_vim_script_arr(data)
                     vim.cmd { cmd = 'cgetexpr', args = {data_vim_arr} }
