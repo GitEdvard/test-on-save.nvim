@@ -24,10 +24,10 @@ local matches_pattern = function(node, type_patterns)
 end
 
 local get_node_text = function(start_node, bufnr, query_string, lang)
-    local query = ts.parse_query(lang, query_string)
+    local query = query_module.parse(lang, query_string)
     for id, node in query:iter_captures(start_node, bufnr, 0, -1) do
         if id == 1 then
-            return query_module.get_node_text(node, bufnr)
+            return ts.get_node_text(node, bufnr)
         end
     end
     return nil
