@@ -71,9 +71,17 @@ local transform_data = function(data, parser)
   return output
 end
 
+M.detach_test_range = function()
+  if id ~= nil then
+    vim.api.nvim_del_autocmd(id) 
+    print("Test range is detached!")
+  end
+end
+
+
 M.attach_test_range = function(bufnr, command, pattern, parser)
     local group = vim.api.nvim_create_augroup("edvard-automagic", { clear = true })
-    vim.api.nvim_create_autocmd("BufWritePost", {
+    id = vim.api.nvim_create_autocmd("BufWritePost", {
         group = group,
         pattern = pattern,
         callback = function()

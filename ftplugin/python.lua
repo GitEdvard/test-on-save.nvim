@@ -51,3 +51,7 @@ vim.api.nvim_create_user_command("RunTestClass", function()
     local command = "python -m pytest " .. scope .." 2>&1"
     R.run_test(command)
 end, {})
+
+vim.api.nvim_create_user_command("DetachTestRange", function()
+    M.detach_test_range()
+end, {})

@@ -63,3 +63,7 @@ vim.api.nvim_create_user_command("RunTestClass", function()
     local command = "mvn test -DtrimStackTrace=false -Dtest=" .. scope 
     R.run_test(command, java_parser)
 end, {})
+
+vim.api.nvim_create_user_command("DetachTestRange", function()
+    M.detach_test_range()
+end, {})

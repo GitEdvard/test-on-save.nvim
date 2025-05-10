@@ -45,3 +45,6 @@ vim.api.nvim_create_user_command("AttachTestClass", function()
     M.attach_test_range(bufnr, command, "*.cs")
 end, {})
 
+vim.api.nvim_create_user_command("DetachTestRange", function()
+    M.detach_test_range()
+end, {})
