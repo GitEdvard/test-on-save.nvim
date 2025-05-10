@@ -13,8 +13,8 @@ local scope_for_function = function(bufnr)
         ['function'] = query_for_function,
     }
     local method_name = M.get_unit_test_range(bufnr, type_patterns, "python")
-    local text = vim.fn.expand('%') .. "::" .. method_name
-    return vim.inspect(text)
+    local text = vim.fn.expand('%') .. " -k '" .. method_name .. "'"
+    return text
 end
 
 local scope_for_suite = function(bufnr)
