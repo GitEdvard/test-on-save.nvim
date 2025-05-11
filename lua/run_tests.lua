@@ -8,7 +8,7 @@ local move_cursor = function(prompt_win, nrrows)
     vim.api.nvim_win_set_cursor(prompt_win, {new_line, 0})
 end
 
-local spawn_scratch_window = function()
+local create_new_concole_window = function()
     local original_win = vim.api.nvim_get_current_win()
     vim.cmd.vnew()
     -- Make it a scratch buffer
@@ -17,9 +17,27 @@ local spawn_scratch_window = function()
     vim.cmd{cmd = "setlocal", args = {"bufhidden=hide"}}
     vim.cmd{cmd = "setlocal", args = {"noswapfile"}}
     local bufnr = vim.api.nvim_get_current_buf()
-    local prompt_win = vim.api.nvim_get_current_win()
+    vim.api.nvim_buf_set_name(bufnr, "Console")
+    prompt_win = vim.api.nvim_get_current_win()
     -- vim.api.nvim_set_current_win(original_win)
     return bufnr, prompt_win
+end
+
+local show_console_window = function()
+  local bufnr = vim.fn.bufnr("Console")
+  vim.cmd.vnew()
+  vim.cmd.buffer(bufnr)
+  prompt_win = vim.api.nvim_get_current_win()
+  return bufnr, prompt_win
+end
+
+local spawn_console_window_silent = function()
+  local res = vim.fn.bufname("Console")
+  if res == "Console" then
+    return show_console_window()
+  else
+    return create_new_concole_window()
+  end
 end
 
 local show_and_gather_err = function(data, err_output, bufnr, prompt_win, parser)
@@ -49,7 +67,7 @@ local show_errors = function(err_output, bufnr, prompt_win)
 end
 
 M.run_test = function(command, parser)
-    local bufnr, prompt_win = spawn_scratch_window()
+    local bufnr, prompt_win = spawn_console_window_silent()
     local err_output = {}
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "Waiting for script output ..."})
     vim.fn.jobstart(command, {
