@@ -46,6 +46,9 @@ local find_super_classes = function()
         ['class'] = query_for_class,
     }
     local current_class_name = M.execute_query(bufnr, query_list, "python")
+    if current_class_name == "" or current_class_name == nil then
+      return {}
+    end
     local search_text = current_class_name
     grepper = Job:new({
       command = "rg",
