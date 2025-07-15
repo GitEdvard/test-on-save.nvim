@@ -62,14 +62,24 @@ local find_super_classes = function()
     return super_class_hits
 end
 
+local extract_subclasses = function(super_class_hits)
+    local first_hit = super_class_hits[1]
+    local file_path_list = {}
+    for _, hit in pairs(super_class_hits) do
+      local _, _, file_path = string.find(hit, "(.*%.py):.*")
+      table.insert(file_path_list, file_path)
+    end
+    local files_string = table.concat(file_path_list, " ")
+    return files_string
+end
+
 vim.api.nvim_create_user_command("RunTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local super_class_hits = find_super_classes()
     if #super_class_hits > 0 then
-      local first_hit = super_class_hits[1]
-      local _, _, file_path = string.find(first_hit, "(.*%.py):.*")
+      local files_string = extract_subclasses(super_class_hits)
       local method_name = extract_method_name(bufnr)
-      local command = "python -m pytest -vv " .. file_path .. " -k '" .. method_name .. "' 2>&1"
+      local command = "python -m pytest -vv " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       R.run_test(command)
     else
       local scope = scope_for_function(bufnr)
@@ -78,27 +88,51 @@ vim.api.nvim_create_user_command("RunTestMethod", function()
     end
 end, {})
 
-vim.api.nvim_create_user_command("AttachTestMethod", function()
+vim.api.nvim_create_user_command("RunTestClass", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local scope = scope_for_function(bufnr)
-    local command = "python -m pytest -vv " .. scope .." 2>&1"
-    print("command")
-    print(command)
-    M.attach_test_range(bufnr, command, "*.py")
+    local super_class_hits = find_super_classes()
+    if #super_class_hits > 0 then
+      local files_string = extract_subclasses(super_class_hits)
+      local command = "python -m pytest -vv " .. files_string .. " 2>&1"
+      R.run_test(command)
+    else
+      local scope = scope_for_suite(bufnr)
+      local command = "python -m pytest -vv " .. scope .." 2>&1"
+      R.run_test(command)
+    end
 end, {})
 
 vim.api.nvim_create_user_command("AttachTestClass", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local scope = scope_for_suite(bufnr)
-    local command = "python -m pytest -vv " .. scope .." 2>&1"
-    M.attach_test_range(bufnr, command, "*.py")
+    local super_class_hits = find_super_classes()
+    if #super_class_hits > 0 then
+      local files_string = extract_subclasses(super_class_hits)
+      local command = "python -m pytest -vv " .. files_string .. " 2>&1"
+      M.attach_test_range(bufnr, command, "*.py")
+    else
+      local scope = scope_for_suite(bufnr)
+      local command = "python -m pytest -vv " .. scope .." 2>&1"
+      M.attach_test_range(bufnr, command, "*.py")
+    end
 end, {})
 
-vim.api.nvim_create_user_command("RunTestClass", function()
+vim.api.nvim_create_user_command("AttachTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local scope = scope_for_suite(bufnr)
-    local command = "python -m pytest -vv " .. scope .." 2>&1"
-    R.run_test(command)
+    local super_class_hits = find_super_classes()
+    if #super_class_hits > 0 then
+      local files_string = extract_subclasses(super_class_hits)
+      local method_name = extract_method_name(bufnr)
+      local command = "python -m pytest -vv " .. files_string .. " -k '" .. method_name .. "' 2>&1"
+      print("command")
+      print(command)
+      M.attach_test_range(bufnr, command, "*.py")
+    else
+      local scope = scope_for_function(bufnr)
+      local command = "python -m pytest -vv " .. scope .." 2>&1"
+      print("command")
+      print(command)
+      M.attach_test_range(bufnr, command, "*.py")
+    end
 end, {})
 
 vim.api.nvim_create_user_command("DetachTestRange", function()
