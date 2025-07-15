@@ -10,4 +10,9 @@ M.to_vim_script_arr = function(lua_table)
     return '[\'' .. table.concat(escaped_table, '\',\'') .. '\']'
 end
 
+P = function(v)
+    print(vim.inspect(v))
+    return v
+end
+
 return M

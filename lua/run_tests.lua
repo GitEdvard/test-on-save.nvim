@@ -70,7 +70,7 @@ M.run_test = function(command, parser)
     local bufnr, prompt_win = spawn_console_window_silent()
     local err_output = {}
     vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "Waiting for script output ..."})
-    vim.fn.jobstart(command, {
+    local ret = vim.fn.jobstart(command, {
         stdout_buffered = true,
         on_stdout = function(_, data)
             err_output = show_and_gather_err(data, err_output, bufnr, prompt_win, parser)

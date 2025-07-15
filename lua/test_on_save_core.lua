@@ -2,6 +2,7 @@ local query_module = require'vim.treesitter.query'
 local ts_utils = require'nvim-treesitter.ts_utils'
 local ts = require'vim.treesitter'
 local to_vim_script_arr = require'utils'.to_vim_script_arr
+require('utils')
 
 local M = {}
 -- Trim spaces and opening brackets from end
@@ -9,14 +10,14 @@ local transform_line = function(line)
     return line:gsub('%s*[%[%(%{]*%s*$', '')
 end
 
-local matches_pattern = function(node, type_patterns)
+local matches_pattern = function(node, query_list)
     local node_type = node:type()
     local is_valid = false
     local matching_pattern = ""
-    for rgx in pairs(type_patterns) do
-        if node_type:find(rgx) then
+    for node_type_identifier in pairs(query_list) do
+        if node_type:find(node_type_identifier) then
             is_valid = true
-            matching_pattern = rgx
+            matching_pattern = node_type_identifier
             break
         end
     end
@@ -27,13 +28,14 @@ local get_node_text = function(start_node, bufnr, query_string, lang)
     local query = query_module.parse(lang, query_string)
     for id, node in query:iter_captures(start_node, bufnr, 0, -1) do
         if id == 1 then
-            return ts.get_node_text(node, bufnr)
+            local node_text = ts.get_node_text(node, bufnr)
+            return node_text
         end
     end
     return nil
 end
 
-M.get_unit_test_range = function(bufnr, type_patterns, lang)
+M.execute_query = function(bufnr, query_list, lang)
     local options = {}
     local indicator_size = 100
     local transform_fn = transform_line
@@ -48,10 +50,10 @@ M.get_unit_test_range = function(bufnr, type_patterns, lang)
     local lines = {}
     local expr = current_node
     while expr do
-        local matches, matching_pattern = matches_pattern(expr, type_patterns)
+        local matches, matching_pattern = matches_pattern(expr, query_list)
         if matches then
             local method_node = expr
-            local text = get_node_text(method_node, bufnr, type_patterns[matching_pattern], lang)
+            local text = get_node_text(method_node, bufnr, query_list[matching_pattern], lang)
             table.insert(lines, 1, text)
         end
         expr = expr:parent()

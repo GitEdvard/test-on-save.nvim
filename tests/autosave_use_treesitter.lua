@@ -52,7 +52,7 @@ local get_node_text = function(start_node, bufnr, query_string)
     return nil
 end
 
-function get_unit_test_range(bufnr, type_patterns)
+function execute_query(bufnr, type_patterns)
     local options = {}
     local indicator_size = 100
     local transform_fn = transform_line
@@ -82,7 +82,7 @@ local write_method = function(bufnr)
         ['class'] = query_for_class,
         ['method'] = query_for_method,
     }
-    local text = get_unit_test_range(bufnr, type_patterns)
+    local text = execute_query(bufnr, type_patterns)
     print(vim.inspect(text))
 end
 
@@ -91,7 +91,7 @@ local write_class = function(bufnr)
         ['namespace'] = query_for_namespace,
         ['class'] = query_for_class,
     }
-    local text = get_unit_test_range(bufnr, type_patterns)
+    local text = execute_query(bufnr, type_patterns)
     print(vim.inspect(text))
 end
 

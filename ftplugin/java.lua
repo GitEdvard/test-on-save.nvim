@@ -20,7 +20,7 @@ local scope_for_method = function(bufnr)
         ['class'] = query_for_class,
         ['method'] = query_for_method,
     }
-    local text = M.get_unit_test_range(bufnr, type_patterns, "java")
+    local text = M.execute_query(bufnr, type_patterns, "java")
     return vim.inspect(text)
 end
 
@@ -28,7 +28,7 @@ local scope_for_class = function(bufnr)
     local type_patterns = {
         ['class'] = query_for_class,
     }
-    local text = M.get_unit_test_range(bufnr, type_patterns, "java")
+    local text = M.execute_query(bufnr, type_patterns, "java")
     return vim.inspect(text)
 end
 
