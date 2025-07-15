@@ -40,12 +40,10 @@ local spawn_console_window_silent = function()
   end
 end
 
-local show_and_gather_err = function(data, err_output, bufnr, prompt_win, parser)
+local show_and_gather_err = function(data, err_output, parser)
     if not data then
         return err_output
     end
-    vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, data)
-    move_cursor(prompt_win, #data)
     for _, row in ipairs(data) do
       if parser ~= nil then
         parsed_row = parser(row)
@@ -60,23 +58,22 @@ local show_and_gather_err = function(data, err_output, bufnr, prompt_win, parser
 end
 
 local show_errors = function(err_output, bufnr, prompt_win)
-    vim.api.nvim_buf_set_lines(bufnr, -1, -1, false, {"Output written to the quickfix."})
-    move_cursor(prompt_win, 1)
     local vim_script_arr = to_vim_script_arr(err_output)
     vim.cmd { cmd = 'cgetexpr', args = {vim_script_arr} }
+    vim.cmd { cmd = 'copen'}
+    local c_w = vim.api.nvim_replace_termcodes('<C-w>', true, false, true)
+    vim.api.nvim_feedkeys(c_w .. 'L', 'n', false)
 end
 
 M.run_test = function(command, parser)
-    local bufnr, prompt_win = spawn_console_window_silent()
     local err_output = {}
-    vim.api.nvim_buf_set_lines(bufnr, 0, -1, false, { "Waiting for script output ..."})
     local ret = vim.fn.jobstart(command, {
         stdout_buffered = true,
         on_stdout = function(_, data)
-            err_output = show_and_gather_err(data, err_output, bufnr, prompt_win, parser)
+            err_output = show_and_gather_err(data, err_output, parser)
         end,
         on_stderr = function(_, data)
-            err_output = show_and_gather_err(data, err_output, bufnr, prompt_win, parser)
+            err_output = show_and_gather_err(data, err_output, parser)
         end,
         on_exit = function(_, exit_code, _)
             show_errors(err_output, bufnr, prompt_win)
