@@ -39,7 +39,7 @@ local scope_for_suite = function(bufnr)
     return vim.inspect(text)
 end
 
-local find_super_classes = function()
+local find_sub_classes = function()
     local bufnr = vim.api.nvim_get_current_buf()
     local cwd = vim.fn.getcwd()
     local query_list = {
@@ -56,19 +56,19 @@ local find_super_classes = function()
       cwd = cwd,
     })
     local rg_hits = grepper:sync()
-    super_class_hits = {}
+    sub_class_hits = {}
     for _, single_rg_hit in pairs(rg_hits) do
       if string.find(single_rg_hit, "class %w*%(".. search_text .. "%)") then
-        table.insert(super_class_hits, single_rg_hit)
+        table.insert(sub_class_hits, single_rg_hit)
       end
     end
-    return super_class_hits
+    return sub_class_hits
 end
 
-local extract_subclasses = function(super_class_hits)
-    local first_hit = super_class_hits[1]
+local extract_subclasses = function(sub_class_hits)
+    local first_hit = sub_class_hits[1]
     local file_path_list = {}
-    for _, hit in pairs(super_class_hits) do
+    for _, hit in pairs(sub_class_hits) do
       local _, _, file_path = string.find(hit, "(.*%.py):.*")
       table.insert(file_path_list, file_path)
     end
@@ -78,9 +78,9 @@ end
 
 vim.api.nvim_create_user_command("RunTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local super_class_hits = find_super_classes()
-    if #super_class_hits > 0 then
-      local files_string = extract_subclasses(super_class_hits)
+    local sub_class_hits = find_sub_classes()
+    if #sub_class_hits > 0 then
+      local files_string = extract_subclasses(sub_class_hits)
       local method_name = extract_method_name(bufnr)
       local command = "python -m pytest -vv " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       R.run_test(command)
@@ -93,9 +93,9 @@ end, {})
 
 vim.api.nvim_create_user_command("RunTestClass", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local super_class_hits = find_super_classes()
-    if #super_class_hits > 0 then
-      local files_string = extract_subclasses(super_class_hits)
+    local sub_class_hits = find_sub_classes()
+    if #sub_class_hits > 0 then
+      local files_string = extract_subclasses(sub_class_hits)
       local command = "python -m pytest -vv " .. files_string .. " 2>&1"
       R.run_test(command)
     else
@@ -107,9 +107,9 @@ end, {})
 
 vim.api.nvim_create_user_command("AttachTestClass", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local super_class_hits = find_super_classes()
-    if #super_class_hits > 0 then
-      local files_string = extract_subclasses(super_class_hits)
+    local sub_class_hits = find_sub_classes()
+    if #sub_class_hits > 0 then
+      local files_string = extract_subclasses(sub_class_hits)
       local command = "python -m pytest -vv " .. files_string .. " 2>&1"
       M.attach_test_range(bufnr, command, "*.py")
     else
@@ -121,9 +121,9 @@ end, {})
 
 vim.api.nvim_create_user_command("AttachTestMethod", function()
     local bufnr = vim.api.nvim_get_current_buf()
-    local super_class_hits = find_super_classes()
-    if #super_class_hits > 0 then
-      local files_string = extract_subclasses(super_class_hits)
+    local sub_class_hits = find_sub_classes()
+    if #sub_class_hits > 0 then
+      local files_string = extract_subclasses(sub_class_hits)
       local method_name = extract_method_name(bufnr)
       local command = "python -m pytest -vv " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       print("command")

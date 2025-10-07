@@ -62,6 +62,12 @@ M.execute_query = function(bufnr, query_list, lang)
     return text
 end
 
+M.get_text_at_cursor = function(bufnr)
+    local current_node = ts_utils.get_node_at_cursor()
+    if not current_node then return "" end
+    return ts.get_node_text(current_node, bufnr)
+end
+
 local transform_data = function(data, parser)
   local output = {}
   for _, row in ipairs(data) do
