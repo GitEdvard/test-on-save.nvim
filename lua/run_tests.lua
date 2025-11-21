@@ -76,7 +76,12 @@ M.run_test = function(command, parser)
             err_output = show_and_gather_err(data, err_output, parser)
         end,
         on_exit = function(_, exit_code, _)
-            show_errors(err_output, bufnr, prompt_win)
+            if exit_code == 0 then
+                print("Test passed")
+            else
+                print("Test failed")
+                show_errors(err_output, bufnr, prompt_win)
+            end
         end
     })
 end
