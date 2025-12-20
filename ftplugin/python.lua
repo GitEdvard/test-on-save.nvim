@@ -289,4 +289,5 @@ end, {})
 
 vim.api.nvim_create_user_command("DetachTestRange", function()
     M.detach_test_range()
+    mystate.last_pick = nil
 end, {})
