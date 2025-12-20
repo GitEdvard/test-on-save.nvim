@@ -25,6 +25,8 @@ name: (identifier) @name)
 
 local current_selected_class_scope = ""
 
+local mystate = require("mystate")
+
 local find_sub_classes = function()
     local bufnr = vim.api.nvim_get_current_buf()
     local cwd = vim.fn.getcwd()
@@ -92,18 +94,17 @@ find_subclasses_rec2 = function(root_class, rg_hits)
 end
 
 local selection_picker = function(title, contents_table, on_select)
+  local bufnr = vim.api.nvim_get_current_buf()
   local opts = {}
-  local selection = ""
   pickers.new(opts, {
     prompt_title = title,
     attach_mappings = function(prompt_bufnr, map)
       actions.select_default:replace(function()
-        actions.close(prompt_bufnr)
         selection = action_state.get_selected_entry()
         if on_select then
-          current_selected_class_scope = on_select(selection)
+          mystate.last_pick = on_select(selection, bufnr)
         end
-
+        actions.close(prompt_bufnr)
       end)
       return true
     end,
@@ -115,7 +116,6 @@ local selection_picker = function(title, contents_table, on_select)
     sorter = conf.generic_sorter(opts),
     push_cursor_on_edit = true,
   }):find()
-  return selection
 end
 
 
@@ -253,10 +253,9 @@ local attach_single_method_from_class = function(class_scope, bufnr)
   return class_scope
 end
 
-attach_single_method = function(selection)
+attach_single_method = function(selection, bufnr)
   local class_name = string.match(selection.text, "class%s+(%w+)%(.*%)")
   local file_path = selection.filename
-  local bufnr = vim.api.nvim_get_current_buf()
   class_scope = file_path.."::"..class_name
   return attach_single_method_from_class(class_scope, bufnr)
 end
@@ -270,10 +269,9 @@ local attach_method_for_current_class = function(bufnr)
 end
 
 vim.api.nvim_create_user_command("AttachTestMethodUnique", function()
-    print("current_selected_class_scope: "..current_selected_class_scope)
     local bufnr = vim.api.nvim_get_current_buf()
-    if current_selected_class_scope ~= "" then
-      return attach_single_method_from_class(current_selected_class_scope, bufnr)
+    if mystate.last_pick ~= nil and mystate.last_pick ~= "" then
+      return attach_single_method_from_class(mystate.last_pick, bufnr)
     end
     local acc_rg_hits = {}
     local query_list = {
