@@ -93,7 +93,7 @@ find_subclasses_rec2 = function(root_class, rg_hits)
   return rg_hits
 end
 
-local selection_picker = function(title, contents_table, on_select)
+local selection_picker = function(title, contents_table, method_name, on_select)
   local bufnr = vim.api.nvim_get_current_buf()
   local opts = {}
   pickers.new(opts, {
@@ -102,7 +102,7 @@ local selection_picker = function(title, contents_table, on_select)
       actions.select_default:replace(function()
         selection = action_state.get_selected_entry()
         if on_select then
-          mystate.last_pick = on_select(selection, bufnr)
+          mystate.last_pick = on_select(selection, method_name)
         end
         actions.close(prompt_bufnr)
       end)
@@ -243,8 +243,7 @@ vim.api.nvim_create_user_command("AttachTestMethod", function()
     end
 end, {})
 
-local attach_single_method_from_class = function(class_scope, bufnr)
-  local method_name = extract_method_name(bufnr)
+local attach_single_method_from_class = function(class_scope, method_name)
   local scope = class_scope.."::"..method_name
   local command = "python -m pytest -vv " .. scope .." 2>&1"
   print("command")
@@ -253,11 +252,11 @@ local attach_single_method_from_class = function(class_scope, bufnr)
   return class_scope
 end
 
-attach_single_method = function(selection, bufnr)
+attach_single_method = function(selection, method_name)
   local class_name = string.match(selection.text, "class%s+(%w+)%(.*%)")
   local file_path = selection.filename
   class_scope = file_path.."::"..class_name
-  return attach_single_method_from_class(class_scope, bufnr)
+  return attach_single_method_from_class(class_scope, method_name)
 end
 
 local attach_method_for_current_class = function(bufnr)
@@ -270,8 +269,9 @@ end
 
 vim.api.nvim_create_user_command("AttachTestMethodUnique", function()
     local bufnr = vim.api.nvim_get_current_buf()
+    local method_name = extract_method_name(bufnr)
     if mystate.last_pick ~= nil and mystate.last_pick ~= "" then
-      return attach_single_method_from_class(mystate.last_pick, bufnr)
+      return attach_single_method_from_class(mystate.last_pick, method_name)
     end
     local acc_rg_hits = {}
     local query_list = {
@@ -280,7 +280,7 @@ vim.api.nvim_create_user_command("AttachTestMethodUnique", function()
     local current_class_name = M.execute_query(bufnr, query_list, "python")
     local sub_class_hits = find_subclasses_rec2(current_class_name, acc_rg_hits)
     if #sub_class_hits > 0 then
-      selection_picker("Pick class to run", sub_class_hits, attach_single_method)
+      selection_picker("Pick class to run", sub_class_hits, method_name, attach_single_method)
       return 
     else
       attach_method_for_current_class(bufnr)
