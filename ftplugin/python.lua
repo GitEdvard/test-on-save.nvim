@@ -82,13 +82,16 @@ local find_subclasses_from_class = function(super_class_name)
 end
 
 
-find_subclasses_rec2 = function(root_class, rg_hits)
+find_subclasses_rec2 = function(root_class, rg_hits, hits_with_subclasses)
   local hits = find_subclasses_from_class(root_class)
+  if #hits > 0 then
+    table.insert(hits_with_subclasses, root_class)
+  end
   for _, single_rg_hit in pairs(hits) do
     table.insert(rg_hits, single_rg_hit)
     local class_name = class_name_from_rg_hit(single_rg_hit)
     local class_name_trimmed = class_name:gsub("%s+", "")
-    find_subclasses_rec2(class_name_trimmed, rg_hits)
+    find_subclasses_rec2(class_name_trimmed, rg_hits, hits_with_subclasses)
   end
   return rg_hits
 end
@@ -267,6 +270,23 @@ local attach_method_for_current_class = function(bufnr)
     M.attach_test_range(bufnr, command, "*.py")
 end
 
+local filter_a_by_b = function(table_a, table_b)
+  local set_of_table_b = {}
+  for _, v in ipairs(table_b) do
+    set_of_table_b[v] = true
+  end
+  local i = 1
+  while i < #table_a do
+    local class_name = table_a[i]:match("class%s+([^%(%s]+)")
+    if class_name ~= nil and set_of_table_b[class_name] then
+      table.remove(table_a, i)
+    else
+      i = i + 1
+    end
+  end
+  return table_a
+end
+
 vim.api.nvim_create_user_command("AttachTestMethodUnique", function()
     local bufnr = vim.api.nvim_get_current_buf()
     local method_name = extract_method_name(bufnr)
@@ -274,13 +294,15 @@ vim.api.nvim_create_user_command("AttachTestMethodUnique", function()
       return attach_single_method_from_class(mystate.last_pick, method_name)
     end
     local acc_rg_hits = {}
+    local acc_abstract_hits = {}
     local query_list = {
         ['class'] = query_for_class,
     }
     local current_class_name = M.execute_query(bufnr, query_list, "python")
-    local sub_class_hits = find_subclasses_rec2(current_class_name, acc_rg_hits)
-    if #sub_class_hits > 0 then
-      selection_picker("Pick class to run", sub_class_hits, method_name, attach_single_method)
+    local sub_class_hits = find_subclasses_rec2(current_class_name, acc_rg_hits, acc_abstract_hits)
+    local impl_class_hits = filter_a_by_b(sub_class_hits, acc_abstract_hits)
+    if #impl_class_hits > 0 then
+      selection_picker("Pick class to run", impl_class_hits, method_name, attach_single_method)
       return 
     else
       attach_method_for_current_class(bufnr)
