@@ -1,5 +1,6 @@
 local N = {}
 local M = require'test_on_save_core'
+require('python.mycommon_python')
 local Job = require('plenary.job')
 local pickers = require "telescope.pickers"
 local conf = require("telescope.config").values
@@ -16,6 +17,8 @@ local fetch_text_at_cursor = require'treesitter.my_utils'.fetch_text_at_cursor
 local matches_pattern = require'treesitter.my_utils'.matches_pattern
 local get_node_text = require'treesitter.my_utils'.get_node_text
 local get_multiple_node_texts = require'treesitter.my_utils'.get_multiple_node_texts
+local find_subclasses_from_class = require('python.mycommon_python').find_subclasses_from_class
+local class_name_from_rg_hit = require('python.mycommon_python').class_name_from_rg_hit
 
 local latest_search_type = ""
 local latest_search_text = ""
@@ -91,45 +94,6 @@ local find_super_class = function()
     }
     local prefix = "class "
     return find_with_prefix(query_list, prefix)
-end
-
-local find_subclasses = function(super_class_name)
-    local search_text = "class .*?\\((.* ,)?\\b" ..  super_class_name .."\\b(, .*)?\\)"
-    local cwd = vim.fn.getcwd()
-    grepper = Job:new({
-      command = "rg",
-      args = {"--vimgrep", "--type", "py", "-e", search_text, cwd},
-      cwd = cwd,
-    })
-    local rg_hits = grepper:sync()
-    local filtered_hits = {}
-    for _, value in pairs(rg_hits) do
-      -- Match whole word only
-      if not value:find("%f[%a]tests%f[%A]") then
-        table.insert(filtered_hits, value)
-      end
-    end
-    return filtered_hits
-end
-
-local class_name_from_rg_hit = function(single_rg_hit)
-  local class_name_cand2 = single_rg_hit:match(".*class (.*)%(.*%).*")
-  if class_name_cand2 ~= nil then 
-    return class_name_cand2
-  end
-  local class_name_cand1 = single_rg_hit:match(".*class (.*):")
-  return class_name_cand1
-end
-
-find_subclasses_rec = function(root_class, rg_hits)
-  local hits = find_subclasses(root_class)
-  for _, single_rg_hit in pairs(hits) do
-    table.insert(rg_hits, single_rg_hit)
-    local class_name = class_name_from_rg_hit(single_rg_hit)
-    local class_name_trimmed = class_name:gsub("%s+", "")
-    find_subclasses_rec(class_name_trimmed, rg_hits)
-  end
-  return rg_hits
 end
 
 local find_sibling_classes = function(query_list)
@@ -291,7 +255,8 @@ end
 N.show_class_family = function()
   local root_super_class_name, rg_hits_for_root = find_root_super_class_name()
   local accumulated_hits = rg_hits_for_root
-  find_subclasses_rec(root_super_class_name, accumulated_hits)
+  local acc_abstract_classes = {}
+  find_subclasses_rec2(root_super_class_name, accumulated_hits, acc_abstract_classes)
   show_picker("Class family", accumulated_hits)
 end
 
@@ -335,7 +300,8 @@ end
 N.show_subclasses = function()
   local current_class_name, rg_hit = find_class_name_and_rg_hit(query_for_class)
   local accumulated_hits = rg_hit
-  find_subclasses_rec(current_class_name, accumulated_hits)
+  local acc_abstract_classes = {}
+  find_subclasses_rec2(current_class_name, accumulated_hits, acc_abstract_classes)
   show_picker("Subclasses", accumulated_hits)
 end
 
@@ -415,7 +381,8 @@ end
 N.show_class_instantiation = function()
   local current_class_name, rg_hit = find_class_name_and_rg_hit(query_for_class)
   local accumulated_rg_hits = rg_hit
-  find_subclasses_rec(current_class_name, accumulated_rg_hits)
+  local acc_abstract_classes = {}
+  find_subclasses_rec2(current_class_name, accumulated_rg_hits, acc_abstract_classes)
   vim.cmd("normal! mB")
 
   local instantiation_list = {}
