@@ -90,6 +90,14 @@ local extract_method_name = function(bufnr)
     return method_name
 end
 
+local extract_class_name = function(bufnr)
+  local query_list = {
+      ['class'] = query_for_class,
+  }
+  local current_class_name = M.execute_query(bufnr, query_list, "python")
+  return current_class_name
+end
+
 local scope_for_function = function(bufnr)
     local method_pattern = {
         ['function'] = query_for_function,
@@ -267,6 +275,74 @@ vim.api.nvim_create_user_command("AttachTestMethodUnique", function()
     else
       attach_method_for_current_class(bufnr)
     end
+end, {})
+
+local show_test_param_picker = function(title, contents_table, on_select)
+  local bufnr = vim.api.nvim_get_current_buf()
+  local opts = {}
+  pickers.new(opts, {
+    prompt_title = title,
+    finder = finders.new_table {
+      results = contents_table,
+      entry_maker = function(entry)
+        return {
+          value = entry.text,
+          ordinal = entry.text,
+          display = entry.display,
+        }
+      end,
+    },
+    attach_mappings = function(prompt_bufnr, map)
+      actions.select_default:replace(function()
+        selection = action_state.get_selected_entry()
+        if on_select then
+          mystate.last_pick = on_select(selection, bufnr)
+        end
+        actions.close(prompt_bufnr)
+      end)
+      return true
+    end,
+    sorter = conf.generic_sorter(opts),
+    push_cursor_on_edit = true,
+  }):find()
+end
+
+local param_test_selected = function(selection, bufnr)
+  local scope = selection.value
+  local command = "python -m pytest -vv " .. scope .." 2>&1"
+  print("command")
+  print(command)
+  M.attach_test_range(bufnr, command, "*.py")
+end
+
+vim.api.nvim_create_user_command("AttachParametrized", function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local scope = scope_for_function_unique(bufnr)
+  local cwd = vim.fn.getcwd()
+  print("Getting test information...")
+  grepper = Job:new({
+    command = "python",
+    args = {"-m", "pytest", "--collect-only", "-q", scope},
+    cwd = cwd,
+  })
+  local scopes_for_param_test = grepper:sync()
+  local test_name = ""
+  local filtered_scopes = {}
+  for _, test_scope in ipairs(scopes_for_param_test) do
+    if test_scope:find("test_") then
+      table.insert(filtered_scopes, test_scope)
+    end
+  end
+  scopes_for_param_test = filtered_scopes
+  local picker_table = {}
+  for _, test_scope in ipairs(scopes_for_param_test) do
+    local entry = {}
+    test_name = test_scope:match("%[(.*)%]")
+    entry.text = test_scope
+    entry.display = test_name
+    table.insert(picker_table, entry)
+  end
+  show_test_param_picker("Test names", picker_table, param_test_selected)
 end, {})
 
 vim.api.nvim_create_user_command("DetachTestRange", function()
