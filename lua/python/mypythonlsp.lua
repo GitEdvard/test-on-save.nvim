@@ -7,16 +7,17 @@ local conf = require("telescope.config").values
 local finders = require "telescope.finders"
 local make_entry = require "telescope.make_entry"
 local ts_utils = require'nvim-treesitter.ts_utils'
-local query_for_superclass = require'treesitter.my_utils'.query_for_superclass
-local query_for_class = require'treesitter.my_utils'.query_for_class
-local query_for_function = require'treesitter.my_utils'.query_for_function
-local query_for_methods = require'treesitter.my_utils'.query_for_methods
-local call_execute_query = require'treesitter.my_utils'.call_execute_query
-local to_vim_script_arr = require'treesitter.my_utils'.to_vim_script_arr
-local fetch_text_at_cursor = require'treesitter.my_utils'.fetch_text_at_cursor
-local matches_pattern = require'treesitter.my_utils'.matches_pattern
-local get_node_text = require'treesitter.my_utils'.get_node_text
-local get_multiple_node_texts = require'treesitter.my_utils'.get_multiple_node_texts
+local ts = require'vim.treesitter'
+local query_for_superclass = require'python.my_utils'.query_for_superclass
+local query_for_class = require'python.my_utils'.query_for_class
+local query_for_function = require'python.my_utils'.query_for_function
+local query_for_methods = require'python.my_utils'.query_for_methods
+local call_execute_query = require'python.my_utils'.call_execute_query
+local to_vim_script_arr = require'python.my_utils'.to_vim_script_arr
+local fetch_text_at_cursor = require'python.my_utils'.fetch_text_at_cursor
+local matches_pattern = require'python.my_utils'.matches_pattern
+local get_node_text = require'python.my_utils'.get_node_text
+local get_multiple_node_texts = require'python.my_utils'.get_multiple_node_texts
 local find_subclasses_from_class = require('python.mycommon_python').find_subclasses_from_class
 local class_name_from_rg_hit = require('python.mycommon_python').class_name_from_rg_hit
 
@@ -269,9 +270,14 @@ local show_method_usages_caret = function(text_at_cursor)
   show_picker("Methods usages", method_usages)
 end
 
-N.show_method_usages_caret = function()
-  local text_at_cursor = fetch_text_at_cursor()
-  if text_at_cursor == "__init__" then
+N.show_usages_caret = function()
+  local bufnr = vim.api.nvim_get_current_buf()
+  local current_node = ts_utils.get_node_at_cursor()
+  if not current_node then return "" end
+  local text_at_cursor = ts.get_node_text(current_node, bufnr)
+  local node_type = current_node:parent():type()
+
+  if text_at_cursor == "__init__" or node_type == "class_definition"then
     N.show_class_instantiation()
   else
     show_method_usages_caret(text_at_cursor)
