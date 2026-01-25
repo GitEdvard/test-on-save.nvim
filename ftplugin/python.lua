@@ -158,6 +158,7 @@ vim.api.nvim_create_user_command("RunTestMethod", function()
     if #sub_class_hits > 0 then
       local files_string = extract_subclasses(sub_class_hits)
       local method_name = extract_method_name(bufnr)
+      -- local command = "python -m pytest -vv --log-cli-level=INFO " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       local command = "python -m pytest -vv " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       R.run_test(command)
     else
@@ -201,6 +202,7 @@ vim.api.nvim_create_user_command("AttachTestMethod", function()
     if #sub_class_hits > 0 then
       local files_string = extract_subclasses(sub_class_hits)
       local method_name = extract_method_name(bufnr)
+      -- local command = "python -m pytest -vv --log-cli-level=INFO " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       local command = "python -m pytest -vv " .. files_string .. " -k '" .. method_name .. "' 2>&1"
       print("command")
       print(command)
@@ -338,6 +340,7 @@ vim.api.nvim_create_user_command("AttachParametrized", function()
   for _, test_scope in ipairs(scopes_for_param_test) do
     local entry = {}
     test_name = test_scope:match("%[(.*)%]")
+    test_scope = test_scope:gsub(" ", "\\ ")
     entry.text = test_scope
     entry.display = test_name
     table.insert(picker_table, entry)
