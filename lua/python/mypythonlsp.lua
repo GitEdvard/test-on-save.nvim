@@ -1,5 +1,6 @@
 local N = {}
 local M = require'test_on_save_core'
+local V = require'python.navigation'
 require('python.mycommon_python')
 local Job = require('plenary.job')
 local pickers = require "telescope.pickers"
@@ -408,5 +409,9 @@ N.show_class_instantiation = function()
   latest_search_type = "class"
   show_picker("Find instantiations", instantiation_list)
 end
+
+N.goto_next_class = V.goto_next_class
+
+N.goto_previous_class = V.goto_previous_class
 
 return N
